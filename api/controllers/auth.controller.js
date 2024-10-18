@@ -2,35 +2,82 @@ import User from '../models/user-model.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+
 dotenv.config();
 
-export const signup = async (req, res, next) => {
-    const { username, email, password } = req.body;
+// Ensure the 'uploads' folder exists
+if (!fs.existsSync('./uploads')) {
+    fs.mkdirSync('./uploads');
+}
 
-    try {
-        // Check if username already exists
-        const existingUsername = await User.findOne({ username });
-        if (existingUsername) {
-            return res.status(409).json({ message: "Username already exists" });
-        }
-
-        // Check if email already exists
-        const existingEmail = await User.findOne({ email });
-        if (existingEmail) {
-            return res.status(409).json({ message: "Email already exists" });
-        }
-
-        // If no conflicts, hash the password and create the new user
-        const hashedPassword = bcrypt.hashSync(password, 10);
-        const newUser = new User({ username, email, password: hashedPassword });
-
-        // Save the new user
-        await newUser.save();
-        res.status(201).json({ message: "success" });
-    } catch (error) {
-        next(error);
+// Setup storage for profile images
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, './uploads'); // Save images to "uploads" folder
+    },
+    filename: (req, file, cb) => {
+        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname)); // Name format
     }
+});
+
+// Initialize multer middleware for profile image uploads
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 1000000 }, // 1MB limit
+}).single('profile'); // 'profile' corresponds to the name in the frontend form
+
+export const signup = async (req, res, next) => {
+    upload(req, res, async (err) => {
+        if (err instanceof multer.MulterError) {
+            return res.status(400).json({ message: `Multer error: ${err.message}` });
+        } else if (err) {
+            return res.status(500).json({ message: `Unknown error: ${err.message}` });
+        }
+
+        const { username, email, password } = req.body;
+
+        try {
+            // Check if username or email already exists
+            const existingUsername = await User.findOne({ username });
+            if (existingUsername) {
+                return res.status(409).json({ message: "Username already exists" });
+            }
+
+            const existingEmail = await User.findOne({ email });
+            if (existingEmail) {
+                return res.status(409).json({ message: "Email already exists" });
+            }
+
+            // If file is uploaded, save the file path to the user's profile field
+            let profileImagePath = '';
+            if (req.file) {
+                profileImagePath = `/uploads/${req.file.filename}`; // Store relative file path
+            }
+
+            // Hash the password
+            const hashedPassword = bcrypt.hashSync(password, 10);
+
+            // Create the new user object
+            const newUser = new User({
+                username,
+                email,
+                password: hashedPassword,
+                profile: profileImagePath, // Store the profile image URL
+            });
+
+            // Save the new user to the database
+            await newUser.save();
+            res.status(201).json({ message: "User registered successfully" });
+
+        } catch (error) {
+            next(error); // Pass any errors to error handling middleware
+        }
+    });
 };
+
 
 
 export const signin = async (req, res, next) => {

@@ -1,6 +1,8 @@
 // import React from 'react'
 import { useState } from 'react';
 import { Link , useNavigate } from 'react-router-dom';
+import { signInSuccess } from '../../redux/user/UserSlice';
+import {useDispatch} from 'react-redux'
 
 const Signin = () => {
   const [errorMessage, setErrorMessage] = useState('');
@@ -11,6 +13,8 @@ const Signin = () => {
   });
 
   const navigate=useNavigate()
+  const dispatch=useDispatch()
+  // const { loading, error } = useSelector((state) => state.user); 
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -18,11 +22,11 @@ const Signin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+   setLoading(true)
     setErrorMessage(''); // Clear previous errors before new attempt
 
     try {
-      const res = await fetch('/api/auth/signin', { // Fixed endpoint typo
+      const res = await fetch('/api/auth/signin', { 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -44,10 +48,13 @@ const Signin = () => {
       // If the request is successful
       const data = await res.json();
       if(data.success===false){
-        setErrorMessage('soemthing went wrong')
+        setErrorMessage('something went wrong')
         return;
       }
-      console.log('User logged in successfully:', data);
+      console.log(data.user);
+      
+      dispatch(signInSuccess(data.user))
+      // console.log('User logged in successfully:', data);
       navigate('/')
       // Post-login logic can be added here, like redirecting to another page
 
