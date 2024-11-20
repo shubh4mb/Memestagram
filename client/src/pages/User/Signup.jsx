@@ -1,10 +1,21 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Signup = () => {
+  const navigate = useNavigate();
+  const { currentUser } = useSelector((state) => state.user);
+
+  useEffect(() => {
+    if (currentUser) {
+      navigate('/memehome');
+    }
+  }, [currentUser, navigate]);
+
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [validationErrors, setValidationErrors] = useState({});
 
   const [formData, setFormData] = useState({
     username: '',
@@ -14,13 +25,37 @@ const Signup = () => {
     profile: ''
   });
 
+  const validateForm = () => {
+    let errors = {};
+
+    if (formData.username.length < 3) {
+      errors.username = 'Username must be at least 3 characters';
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      errors.email = 'Invalid email address';
+    }
+
+    if (formData.password.length < 6) {
+      errors.password = 'Password must be at least 6 characters';
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match';
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleFileChange = (e) => {
-    setFormData({ ...formData, profile: e.target.files[0] }); // Store file in state
-    setPreview(URL.createObjectURL(e.target.files[0])); // For previewing the image
+    setFormData({ ...formData, profile: e.target.files[0] });
+    setPreview(URL.createObjectURL(e.target.files[0]));
   };
 
   const handleSubmit = async (e) => {
@@ -28,42 +63,35 @@ const Signup = () => {
     setLoading(true);
     setErrorMessage('');
 
-    if (formData.password !== formData.confirmPassword) {
-      setErrorMessage('Passwords do not match');
+    if (!validateForm()) {
       setLoading(false);
       return;
     }
 
     try {
-      // Create a FormData object and append form fields
       const formDataToSend = new FormData();
       formDataToSend.append('username', formData.username);
       formDataToSend.append('email', formData.email);
       formDataToSend.append('password', formData.password);
-      formDataToSend.append('profile', formData.profile); // Append profile image file
+      formDataToSend.append('profile', formData.profile);
 
-      // Make the POST request to the backend
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
-        body: formDataToSend, // Send FormData object
+        body: formDataToSend,
+        credentials: 'include'
       });
 
       if (!res.ok) {
         const errorData = await res.json();
-        if (res.status === 409) {
-          setErrorMessage(errorData.message);
-        } else {
-          setErrorMessage(`An error occurred: ${errorData.message || 'Unknown error'}`);
-        }
+        setErrorMessage(errorData.message || 'An error occurred. Please try again.');
         setLoading(false);
         return;
       }
 
-      // Success case
       setLoading(false);
-      // Optionally redirect the user or reset the form
+      navigate('/memehome');
     } catch (error) {
-      console.error(error)
+      console.error(error);
       setErrorMessage('An error occurred. Please try again.');
       setLoading(false);
     }
@@ -73,9 +101,8 @@ const Signup = () => {
     <div className="flex items-center justify-center h-screen bg-gray-100">
       <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-md">
         <h2 className="text-2xl font-bold text-center mb-6">Sign Up</h2>
-        <p>{errorMessage}</p>
+        <p className="text-red-500">{errorMessage}</p>
         <form onSubmit={handleSubmit}>
-          {/* Username */}
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">Username</label>
             <input
@@ -88,9 +115,9 @@ const Signup = () => {
               onChange={handleChange}
               required
             />
+            {validationErrors.username && <p className="text-red-500 text-xs">{validationErrors.username}</p>}
           </div>
 
-          {/* Email */}
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">Email</label>
             <input
@@ -103,9 +130,9 @@ const Signup = () => {
               onChange={handleChange}
               required
             />
+            {validationErrors.email && <p className="text-red-500 text-xs">{validationErrors.email}</p>}
           </div>
 
-          {/* Password */}
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">Password</label>
             <input
@@ -118,9 +145,9 @@ const Signup = () => {
               onChange={handleChange}
               required
             />
+            {validationErrors.password && <p className="text-red-500 text-xs">{validationErrors.password}</p>}
           </div>
 
-          {/* Confirm Password */}
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="confirmPassword">Confirm Password</label>
             <input
@@ -133,16 +160,15 @@ const Signup = () => {
               onChange={handleChange}
               required
             />
+            {validationErrors.confirmPassword && <p className="text-red-500 text-xs">{validationErrors.confirmPassword}</p>}
           </div>
 
-          {/* Profile Pic */}
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2">Profile Image</label>
             <input type="file" name="profile" accept="image/*" onChange={handleFileChange} />
-            {preview && <img src={preview} alt="Preview" width="100" />} {/* Image preview */}
+            {preview && <img src={preview} alt="Preview" width="100" />}
           </div>
 
-          {/* Submit Button */}
           <button
             disabled={loading}
             type="submit"

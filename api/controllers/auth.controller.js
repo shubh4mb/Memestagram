@@ -112,7 +112,7 @@ export const signin = async (req, res, next) => {
         const { password: hashedPassword, ...rest } = user._doc;
 
         // Set the cookie with the JWT token and send the response
-        res.cookie('access_token', token, { httpOnly: true, maxAge: 1000 * 60 * 5 })
+        res.cookie('access_token', token, { httpOnly: true, maxAge: 1000 * 60 * 60 })
             .status(200)
             .json({ user: rest, message: 'Login successful' });
 
@@ -120,3 +120,24 @@ export const signin = async (req, res, next) => {
         next(error); // Pass errors to the error handling middleware
     }
 };
+
+
+export const verify = (req, res) => {
+    // If we reached this point, the token is valid, and req.user contains the user info
+    // const { username, email } = req.user; // Adjust according to your token payload
+    // console.log("working verify");
+    
+    res.status(200).json({ message: 'Token is valid.', authentication:true });
+}
+
+
+export const logoutUser = (req, res) => {
+    // Clear the cookie by setting it to an empty string and expire it immediately
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+      sameSite: 'strict', // Enforce strict SameSite policy for security
+    });
+  
+    return res.status(200).json({ message: 'Logout successful.' });
+  };

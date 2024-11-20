@@ -1,8 +1,8 @@
 // import React from 'react'
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { Link , useNavigate } from 'react-router-dom';
 import { signInSuccess } from '../../redux/user/UserSlice';
-import {useDispatch} from 'react-redux'
+import {useDispatch,useSelector} from 'react-redux'
 
 const Signin = () => {
   const [errorMessage, setErrorMessage] = useState('');
@@ -11,6 +11,20 @@ const Signin = () => {
     identifier: '',
     password: ''
   });
+
+  const {currentUser}= useSelector((state)=>state.user)
+  // console.log(auth.username);
+  
+
+  useEffect(() => {
+    // If admin is already authenticated, redirect to admin dashboard
+    if (currentUser) {
+      navigate('/memehome');
+      // console.log('hisomthinng');
+      
+    }
+  }, []);
+
 
   const navigate=useNavigate()
   const dispatch=useDispatch()
@@ -28,6 +42,7 @@ const Signin = () => {
     try {
       const res = await fetch('/api/auth/signin', { 
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -55,7 +70,7 @@ const Signin = () => {
       
       dispatch(signInSuccess(data.user))
       // console.log('User logged in successfully:', data);
-      navigate('/')
+      navigate('/memehome')
       // Post-login logic can be added here, like redirecting to another page
 
       setLoading(false);

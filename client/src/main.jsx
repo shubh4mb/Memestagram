@@ -5,6 +5,9 @@ import './index.css';
 import { store, persistor } from './redux/store.js';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
+if (typeof global === 'undefined') {
+    var global = window;
+}
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
