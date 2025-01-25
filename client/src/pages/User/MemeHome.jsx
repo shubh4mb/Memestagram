@@ -1,6 +1,6 @@
-
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import ActiveUsers from '../../components/ActiveUsers';
 
 const MemeHome = () => {
   const [memes, setMemes] = useState([]);
@@ -54,9 +54,8 @@ const MemeHome = () => {
       </div>
   
       {/* Right Section */}
-      <div className="w-1/4 bg-gray-100 p-4 rounded-lg hidden md:flex flex-col">
-        <h2 className="text-lg font-semibold mb-4">Right Sidebar</h2>
-        <p>Additional content or ads</p>
+      <div className="hidden md:block sticky top-4 h-fit">
+        <ActiveUsers />
       </div>
     </div>
   </div>

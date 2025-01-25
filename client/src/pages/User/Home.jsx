@@ -2,6 +2,9 @@
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import ActiveUsers from '../../components/ActiveUsers';
+
+
 
 
 
@@ -42,21 +45,31 @@ const Home = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">Memes</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {memes.map((meme) => (
-          <div key={meme.id} className="bg-white rounded-lg shadow-md overflow-hidden h-80">
-            <img 
-              src={meme.imageUrl} 
-              alt={meme.title} 
-              className="w-full h-48 object-contain" 
-            />
-            <div className="pt-8 pl-4">
-              <h2 className="text-xl font-semibold">{meme.title}</h2>
-              <p className="text-gray-600">Posted by: {meme.username}</p>
-            </div>
+      <div className="flex gap-4">
+        {/* Main Content */}
+        <div className="flex-grow">
+          <h1 className="text-3xl font-bold mb-6">Memes</h1>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {memes.map((meme) => (
+              <div key={meme.id} className="bg-white rounded-lg shadow-md overflow-hidden h-80">
+                <img 
+                  src={meme.imageUrl} 
+                  alt={meme.title} 
+                  className="w-full h-48 object-contain" 
+                />
+                <div className="pt-8 pl-4">
+                  <h2 className="text-xl font-semibold">{meme.title}</h2>
+                  <p className="text-gray-600">Posted by: {meme.username}</p>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
+
+        {/* Right Section with Active Users */}
+        <div className="hidden md:block w-80 bg-white rounded-lg shadow-md p-4 h-fit sticky top-4">
+          <ActiveUsers />
+        </div>
       </div>
       <p className="text-center pt-12 font-bold">Sign in to view more memes </p>
     </div>

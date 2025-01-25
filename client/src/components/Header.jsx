@@ -2,18 +2,12 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import LogoutButton from './Logout';
 import { useSelector } from 'react-redux';
-// import { increment , decrement } from '../redux/user/UserSlice';
+import { FaHome, FaPlus, FaUser, FaSignInAlt, FaImages } from 'react-icons/fa';
 
 const Header = () => {
   const [loading, setLoading] = useState(true); // Loading state to manage API call
   const currentUser = useSelector((state) => state.user.currentUser); // Get current user from Redux
-  // const count=useSelector((state)=>state.user.count);
-  // console.log(count);
-  
-  // const dispatch=useDispatch()
 
-  
-  
   // Function to call the API to check authentication
   const checkAuthentication = async () => {
     try {
@@ -23,7 +17,6 @@ const Header = () => {
       });
 
       const data = await response.json();
-      // console.log(data);
 
       if (data.authentication) {
         // If authenticated, update the Redux store if necessary
@@ -46,45 +39,55 @@ const Header = () => {
   }
 
   return (
-    <nav className="bg-gray-800 p-4">
-      <div className="container mx-auto flex justify-between items-center">
-        <div>
-          <Link to="/" className="text-white text-2xl font-bold">
-            Memestagram
-          </Link>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <Link
-            to="/addmeme"
-            className="text-gray-300 hover:text-white transition duration-300 ease-in-out"
-          >
-            + Post
+    <nav className="bg-gradient-to-r from-purple-600 to-blue-500 shadow-lg">
+      <div className="container mx-auto px-4 py-3">
+        <div className="flex justify-between items-center">
+          <Link to="/" className="flex items-center space-x-2">
+            <FaHome className="text-white text-2xl" />
+            <span className="text-white text-2xl font-bold tracking-tight hover:text-purple-200 transition duration-300">
+              Memestagram
+            </span>
           </Link>
 
-          {!currentUser  ? (
+          <div className="flex items-center space-x-6">
             <Link
-              to="/signin"
-              className="text-gray-300 hover:text-white transition duration-300 ease-in-out"
+              to="/addmeme"
+              className="flex items-center space-x-1 text-white hover:text-purple-200 transition duration-300 px-3 py-2 rounded-lg hover:bg-white/10"
             >
-              Sign in
+              <FaPlus className="text-lg" />
+              <span>Post</span>
             </Link>
-          ) : (
-            <>
+
+            {!currentUser ? (
               <Link
-                to="/profile"
-                className="text-gray-300 hover:text-white transition duration-300 ease-in-out"
+                to="/signin"
+                className="flex items-center space-x-1 text-white hover:text-purple-200 transition duration-300 px-4 py-2 rounded-lg border border-white/30 hover:border-white/50"
               >
-                Edit Profile
+                <FaSignInAlt className="text-lg" />
+                <span>Sign in</span>
               </Link>
-              <Link 
-              to='/memesposted'
-              className='text-white'>
-              View Posts
-              </Link>
-              <LogoutButton />
-            </>
-          )}
+            ) : (
+              <div className="flex items-center space-x-4">
+                <Link
+                  to="/profile"
+                  className="flex items-center space-x-1 text-white hover:text-purple-200 transition duration-300 px-3 py-2 rounded-lg hover:bg-white/10"
+                >
+                  <FaUser className="text-lg" />
+                  <span>Profile</span>
+                </Link>
+                <Link 
+                  to='/memesposted'
+                  className="flex items-center space-x-1 text-white hover:text-purple-200 transition duration-300 px-3 py-2 rounded-lg hover:bg-white/10"
+                >
+                  <FaImages className="text-lg" />
+                  <span>My Posts</span>
+                </Link>
+                <div className="pl-2 border-l border-white/30">
+                  <LogoutButton />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </nav>

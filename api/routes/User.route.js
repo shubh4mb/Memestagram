@@ -1,5 +1,5 @@
 import express from 'express'
-import {test,memehome,profile,updateProfile,addMeme,getMemes, deleteMeme,getUserMemesById} from '../controllers/user.controller.js'
+import {test,memehome,profile,updateProfile,addMeme,getMemes, deleteMeme,getUserMemesById , getUsers} from '../controllers/user.controller.js'
 import { authenticateJWT } from '../middlewares/authenticatejwt.js'
 import multer from 'multer';
 import { getUserMemes } from '../middlewares/MemesGet.js';
@@ -21,6 +21,7 @@ router.post('/addmeme',authenticateJWT,upload.single('image'),addMeme)
 router.get('/getAllMemes',authenticateJWT,getMemes)
 router.get('/getUserMemes',authenticateJWT,getUserMemes,getMemes)
 router.get('/getUserMemes/:id',authenticateJWT,getUserMemesById)
+router.get('/active',authenticateJWT,getUsers)
 
 router.delete('/deletememe/:id',authenticateJWT,deleteMeme)
 

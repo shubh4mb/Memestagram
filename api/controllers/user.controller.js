@@ -1,4 +1,3 @@
-
 import User from '../models/user-model.js';
 import Meme from '../models/meme_model.js';
 // Assuming you have a User model
@@ -99,7 +98,7 @@ export const profile = async (req, res) => {
 
 
   export const addMeme = async (req, res) => {
-    console.log('working');
+    // console.log('working');
     
     const { title, description } = req.body;
     const image = req.file;
@@ -143,7 +142,7 @@ export const deleteMeme = async (req, res) => {
   
   try {
     const meme = await Meme.findOne({_id:req.params.id});
-    console.log(meme);
+    // console.log(meme);
     
     if (!meme) {
       // console.log('Meme not found');
@@ -166,17 +165,15 @@ export const deleteMeme = async (req, res) => {
 
 export const getUserMemesById=async (req, res) => {
   
-  
-
 try {
-  console.log('working');
+  // console.log('working');
   const id=req.params.id
-  console.log(id);
+  // console.log(id);
   const user = await User.findById({_id:id}); 
-  console.log(user);
+  // console.log(user);
   // if (!user) return res.status(404).json({ error: "User not found" });
   const memes = await Meme.find({user:id}).sort({ createdAt: -1 }).populate('user', 'username');; // Sorts by newest
-  console.log(memes);
+  // console.log(memes);
   
   res.status(200).json( {username: user.username,memes});
 } catch (error) {
@@ -184,4 +181,42 @@ try {
   
   res.status(500).json({ message: 'Failed to fetch memes' });
 }
+};
+
+export const getUsers=async (req, res) => {
+  console.log("working");
+  
+  try {
+    const users = await User.aggregate([
+      {
+        $lookup: {
+          from: 'memes',
+          localField: '_id',
+          foreignField: 'user',
+          as: 'memes'
+        }
+      },
+      {
+        $project: {
+    
+          username: 1,
+          profile: 1,
+          email: 1,
+          memeCount: { $size: '$memes' }
+        }
+      },
+      {
+        $sort: { memeCount: -1 } // Sort by meme count in descending order
+      }
+    ]);
+    
+    if (users.length === 0) {
+      return res.status(404).json({ message: 'No users found' });
+    }
+    
+    res.status(200).json(users);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ message: 'Server error, could not fetch users' });
+  }
 };
